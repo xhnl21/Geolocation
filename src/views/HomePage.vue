@@ -15,44 +15,22 @@
 
       <div id="container">
           lat: {{ lat }}
-        <br>
+          <br>
           lng: {{ lng }}
           <br>
-          <br>
-          position: {{ position }}
-          <br>
-        <button @click="track">
+          <button @click="track">
             Get Current LocationA
           </button> 
           <br><br><br>
           <button @click="clearWatch(false)">
             Stop Current LocationA
           </button> 
-        <!-- <div>
-          <h1>Geolocation</h1>
-          <p>Your location is:</p>
-          <p>Latitude: {{ coord.latitude }}</p>
-          <p>Longitude: {{ coord.longitude }}</p>
-          <br>
-          coordA: {{ coordA }}
-          <br>
-          coordB: {{ coordB }}
-          <br>
-          <button @click="getCurrentPosition">
-            Get Current Location
-          </button>
-          <br>
-          <button @click="watchPosition">
-            Get Current LocationA
-          </button> 
-        </div>-->
       </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script>
-import { IonContent, IonHeader, IonPage, IonToolbar } from '@ionic/vue';
 
 // import { defineComponent, ref } from 'vue';
 import { Geolocation } from '@capacitor/geolocation';
@@ -78,44 +56,35 @@ export default {
     }
   },
   methods:{
-    trackS () {
-      this.geolocation.getCurrentPosition({ enableHighAccuracy: true }).then((resp) => {
-        console.log(resp);
-      }).catch((error) => {
-          console.log('Error getting location', error);
-      });
-
-      const watch = this.geolocation.watchPosition({ enableHighAccuracy : true, timeout: 10000 });
-      watch.subscribe((data) => {
-          this.data = data;
-          console.log("----->Watch latitude" + data.coords.latitude);
-          console.log("-----> Watch logitude" + data.coords.longitude)
-          console.log("-----> Watch accuracy" + data.coords.accuracy)
-      });
-    },
     async track() {
-      // const obj = {
+      // this.location = await Geolocation.getCurrentPosition({
       //     enableHighAccuracy: true,
       //     timeout: 1000,
       //     maximumAge: 1000,
-      // };
-      // this.location = await Geolocation.getCurrentPosition(obj);
-      this.watchId = await Geolocation.watchPosition({
-          enableHighAccuracy: true,
-          timeout: 1000,
-          maximumAge: 1000,
-        }, (position, err) => {
-          if (err !== undefined) {
-              this.clearWatch();
-              return;
-          }
-          this.lat = position.coords.latitude
-          this.lng = position.coords.longitude
-      })
-      console.log(this.watchId);
+      // });
+      if (this.bool !== false) {
+        this.watchId = await Geolocation.watchPosition({
+            enableHighAccuracy: true,
+            timeout: 1000,
+            maximumAge: 1000,
+          }, (position, err) => {
+            console.log(err);
+            if (err !== undefined) {
+                this.clearWatch();
+                return;
+            }
+            console.log("----->Watch latitude" + position.coords.latitude);
+            console.log("-----> Watch logitude" + position.coords.longitude);
+            console.log("-----> Watch accuracy" + position.coords.accuracy);
+            console.log(this.time());
+            this.lat = position.coords.latitude
+            this.lng = position.coords.longitude
+        })
+        console.log(this.watchId);
+      }
     },
     clearWatch() {
-      if (this.bool) {
+      // if (this.bool) {
         if (this.watchId != null) {
           console.log(this.watchId);
             Geolocation.clearWatch({ id: this.watchId });
@@ -123,31 +92,23 @@ export default {
         } else {
           this.track()
         }
-      } 
-      else {
-        Geolocation.clearWatch({ id: this.watchId });
-      }
+      // } 
+      // else {
+      //   Geolocation.clearWatch({ id: this.watchId });
+      // }
     },
-    async getCurrentPosition() {
-      const coordinates = await Geolocation.getCurrentPosition();
-      this.coord = coordinates;
-      console.log('Current', coordinates);
-    },
-    async getCurrentPositionA() {
-      this.loadingPosition = true;
-
-      navigator.geolocation.getCurrentPosition(({ coords })=>{
-        this.loadingPosition = false;
-        this.geolocation = coords;
+    async stopTrack() {
+      const opt = {id: await this.watchId};
+      Geolocation.clearWatch(opt).then(result=>{
+        console.log('result of clear is',result);
       });
     },
-    async watchPosition() {
-      const wait =  await Geolocation.watchPosition({}, (position, err) => {
-        console.log(position, err);      
-      })
-      this.coordA = wait;
-      console.log("wait", wait);
-      
+    time() {
+        const actual = new Date();
+        const hora = actual.getHours();
+        const minuto = actual.getMinutes();
+        const segundo = actual.getSeconds();
+        return hora + " : " + minuto + " : " + segundo;
     }
   },
   watch: {
@@ -161,7 +122,7 @@ export default {
   },
   setup() {
     return { 
-      IonContent, IonHeader, IonPage, IonToolbar
+      // IonContent, IonHeader, IonPage, IonToolbar, IonTitle
     };
   }
 }
